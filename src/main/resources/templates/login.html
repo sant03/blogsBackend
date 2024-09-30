@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+		crossorigin="anonymous"></script>
+</head>
+
+<body style="height: 100vh;">
+	<div th:if="${isAuth != null && isAuth == false}" class="alert alert-danger alert-dismissible fade show"
+		role="alert">
+		<strong>¡Usuario no Autenticado!</strong> Prueba con un usuario o contraseña diferente.
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+	<section class="container d-flex align-items-center justify-content-center flex-column" style="height: 80%;">
+		<h1 class="col-5">LOGIN</h1>
+		<form th:action="@{'/loginUser'}" method="post" th:object="${user}" class="form-group col-5">
+			<div class="mb-2">
+				<label th:for="username" class="form-control-label">Username</label>
+				<input class="form-control" autocomplete="off" placeholder="Ingrese el username" th:field="*{username}" name="username">
+				<span th:if="${errors != null && errors.containsKey('username')}" th:text="${errors.username}"
+					class="text-danger"></span>
+			</div>
+			<div class="mb-2">
+				<label th:for="password" class="form-control-label">Password</label>
+				<input type="password" class="form-control"  autocomplete="off" placeholder="Ingrese la password" th:field="*{password}" name="password">
+				<span th:if="${errors != null && errors.containsKey('password')}" th:text="${errors.password}"
+					class="text-danger"></span>
+			</div>
+			<div class="form-group mb-4 my-4">
+				<div class="text-center">
+					<input type="submit" th:value="LOGIN" class="btn btn-primary col-4 p-3">
+				</div>
+			</div>
+				<a th:href="@{/signUp}" class="text-center d-flex justify-content-center">
+					SignUp
+				</a>
+		</form>
+	</section>
+</body>
+
+</html>
