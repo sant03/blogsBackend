@@ -1,5 +1,9 @@
 package com.bolsadeideas.springboot.blogpost.app.controllers;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.blogpost.app.entities.Blog;
 import com.bolsadeideas.springboot.blogpost.app.services.BlogService;
@@ -99,6 +104,26 @@ public class BlogController {
 		}
 		return "redirect:/blogs/listar";
 		
+	}
+	
+	@PostMapping("/upload")
+	public ResponseEntity<?> subirImagen(@RequestParam("file") MultipartFile foto){
+		if(!foto.isEmpty()) {
+			Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
+			String roothPath = directorioRecursos.toFile().getAbsolutePath();
+			try {
+				byte[] bytes = foto.getBytes();
+				Path rutaCompleta =  Paths.get(roothPath + "//" + foto.getOriginalFilename());
+				Files.write(rutaCompleta, bytes);
+				return ResponseEntity.ok().body(true);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		return ResponseEntity.ok().body(false);
+
 	}
 	
 	@PostMapping("/crear")
