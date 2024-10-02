@@ -1,6 +1,8 @@
 package com.bolsadeideas.springboot.blogpost.app.controllers;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,11 +11,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -106,19 +112,58 @@ public class BlogController {
 		
 	}
 	
+	@GetMapping("upload/{filename:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String filename){
+		Path pathFoto = Paths.get("src//main//resources//static/uploads").resolve(filename).toAbsolutePath();
+		Resource recurso = null;
+		try {
+			recurso = new UrlResource(pathFoto.toUri());
+			if(!recurso.exists() && !recurso.isReadable()) {
+				throw new RuntimeException("Error no se puede leer la imagen" + pathFoto.toString());
+			}
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"").body(recurso);
+		
+	}
+	
 	@PostMapping("/upload")
-	public ResponseEntity<?> subirImagen(@RequestParam("file") MultipartFile foto){
+	public ResponseEntity<?> subirImagen(@RequestParam("file") MultipartFile foto, @RequestParam int id){
 		if(!foto.isEmpty()) {
-			Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
-			String roothPath = directorioRecursos.toFile().getAbsolutePath();
-			try {
-				byte[] bytes = foto.getBytes();
-				Path rutaCompleta =  Paths.get(roothPath + "//" + foto.getOriginalFilename());
-				Files.write(rutaCompleta, bytes);
-				return ResponseEntity.ok().body(true);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			Blog blog = service.findById(id);
+			if(blog != null) {
+				System.out.print("Objeto Blog: " + blog.toString());
+				System.out.print("Validacion: " + (blog.getFoto() != null && blog.getFoto().length() > 0));
+				if(blog.getFoto() != null && blog.getFoto().length() > 0) {
+					Path pathFoto = Paths.get("src/main/resources/static/uploads").resolve(blog.getFoto()).toAbsolutePath();
+					File archivo = pathFoto.toFile();
+					if(archivo.exists() && archivo.canRead()) {
+						if(archivo.delete()) {
+							System.out.print("Imagen eliminada correctamente");
+						}else {
+							System.out.print("la imagen no se eliminó");
+						}
+					}
+				}else {
+					System.out.print("Imagen no existe, es null");
+				}
+				Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
+				String roothPath = directorioRecursos.toFile().getAbsolutePath();
+				try {
+			        String uniqueFileName = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+					byte[] bytes = foto.getBytes();
+					Path rutaCompleta =  Paths.get(roothPath + "//" + uniqueFileName);
+					Files.write(rutaCompleta, bytes);
+					blog.setFoto(uniqueFileName);
+					service.updateBlog(blog, blog.getId());
+					return ResponseEntity.ok().body(true);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		}
@@ -159,6 +204,7 @@ public class BlogController {
 			//return "crearBlog";
 
 		}
+
 		
 		Blog updatedBlog = service.updateBlog(blog, id);
 		//return "redirect:/blogs/listar/" + updatedBlog.getId();

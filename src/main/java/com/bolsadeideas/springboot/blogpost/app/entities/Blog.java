@@ -136,6 +136,15 @@ public class Blog {
 		}
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return "Blog [id=" + id + ", title=" + title + ", content=" + content + ", category=" + category + ", tags="
+				+ tags + ", tag=" + tag + ", foto=" + foto + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt
+				+ "]";
+	}
+	
+	
 	
 	
 

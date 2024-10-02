@@ -1,5 +1,8 @@
 package com.bolsadeideas.springboot.blogpost.app.services;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,6 +114,11 @@ public class BlogService {
 			dbBlog.setContent(blog.getContent());
 			dbBlog.setCategory(blog.getCategory());
 			dbBlog.setTags(blog.getTags());
+			if(blog.getFoto() == null) {
+				dbBlog.setFoto(dbBlog.getFoto());
+			}else {
+				dbBlog.setFoto(blog.getFoto());
+			}
 			return repository.save(dbBlog);
 		}
 		return null;
@@ -120,7 +128,16 @@ public class BlogService {
 	public Blog delete(Integer id){
 		Optional<Blog> optionalBlog = repository.findById(id);
 		if(optionalBlog.isPresent()){
+			Blog blogDb = optionalBlog.orElseThrow();	
+			if(blogDb.getFoto() != null && blogDb.getFoto().length() > 0) {
+				Path pathFoto = Paths.get("src/main/resources/static/uploads").resolve(blogDb.getFoto()).toAbsolutePath();
+				File archivo = pathFoto.toFile();
+				if(archivo.exists() && archivo.canRead()) {
+					archivo.delete();
+				}
+			}
 			repository.deleteById(id);
+
 			return optionalBlog.orElseThrow();	
 		}
 		return null;	
