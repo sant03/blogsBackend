@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.apache.tomcat.util.digester.ArrayStack;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.context.annotation.SessionScope;
@@ -28,6 +31,7 @@ import com.bolsadeideas.springboot.blogpost.app.entities.Blog;
 import com.bolsadeideas.springboot.blogpost.app.entities.Role;
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
 import com.bolsadeideas.springboot.blogpost.app.services.UserService;
+import com.bolsadeideas.springboot.blogpost.app.util.paginator.PageRender;
 
 import jakarta.validation.Valid;
 
@@ -47,12 +51,17 @@ public class UserController {
 	}
 	
 	@GetMapping("/users")
-	public ResponseEntity<?> listarUsuarios(Model model){
-		List<User> users = service.listUsers();
+	public ResponseEntity<?> listarUsuarios(Model model, @RequestParam(required=false) String term, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="5") int size){
+		
+		PageRequest pageRequest = PageRequest.of(page, size);
+		
+		Page<User> users = service.listUsersPageable(pageRequest , term);
+		PageRender<User> pageRender = new PageRender<User>("/users", users);
+		
 		User user = new User();
 		model.addAttribute("user", user);
 		model.addAttribute("users", users);
-		return ResponseEntity.ok().body(users);
+		return ResponseEntity.ok().body(pageRender);
 	}
 	
 	@GetMapping("/users/{id}")

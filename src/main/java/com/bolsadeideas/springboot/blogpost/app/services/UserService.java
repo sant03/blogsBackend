@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,8 +31,24 @@ public class UserService {
 	@Autowired
 	private RoleRepository roleRepository;
 
-	public List<User> listUsers() {
+	public List<User> listUsers(String term) {
+		if(term != null && !term.equals("")) {
+			return repository.searchByTerm(term);
+		}
 		return repository.findAll();
+	}
+	
+	public Page<User> listUsersPageable(Pageable pageable, String term){
+		if(term != null && !term.equals("")) {
+			List<User> users = repository.searchByTerm(term);
+			
+			int start = (int) pageable.getOffset();
+		    int end = Math.min((start + pageable.getPageSize()), users.size());
+
+		    List<User> pageContent = users.subList(start, end);
+		    return new PageImpl<>(pageContent, pageable, users.size());
+		}
+		return repository.findAll(pageable);
 	}
 
 	public User findById(Integer id) {

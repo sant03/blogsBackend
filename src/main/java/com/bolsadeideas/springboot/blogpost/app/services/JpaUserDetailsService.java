@@ -20,8 +20,12 @@ import com.bolsadeideas.springboot.blogpost.app.repositories.UserRepository;
 @Service
 public class JpaUserDetailsService implements UserDetailsService {
 
-	@Autowired
-	private UserRepository repository;
+	
+	private final UserRepository repository;
+
+    public JpaUserDetailsService(UserRepository userRepository) {
+        this.repository = userRepository;
+    }
 	
 	@Override
     @Transactional(readOnly = true)

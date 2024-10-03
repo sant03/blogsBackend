@@ -95,7 +95,7 @@ public class BlogService {
 			//return ResponseEntity.ok().body(blog);
 			return blog;
 		}/*else {
-			return ResponseEntity.badRequest().body("Lo sentimos el blog no ha sido encontrador, pueba con uno diferente");
+			return ResponseEntity.badRequest().body("Lo sentimos el blog no ha sido encontrado, pueba con uno diferente");
 		}*/
 		return null;
 		

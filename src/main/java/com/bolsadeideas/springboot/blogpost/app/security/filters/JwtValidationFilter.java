@@ -7,6 +7,7 @@ import static com.bolsadeideas.springboot.blogpost.app.security.TokenJwtConfig.S
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 // import org.hibernate.mapping.Collection;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,10 +15,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.bolsadeideas.springboot.blogpost.app.entities.Role;
+import com.bolsadeideas.springboot.blogpost.app.entities.User;
 import com.bolsadeideas.springboot.blogpost.app.security.SimpleGrantedAuthorityJsonCreator;
+import com.bolsadeideas.springboot.blogpost.app.services.JpaUserDetailsService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -32,13 +38,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 
 
 
 
 public class JwtValidationFilter extends BasicAuthenticationFilter{
-
+	
     public JwtValidationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }
@@ -57,10 +64,9 @@ public class JwtValidationFilter extends BasicAuthenticationFilter{
                     Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload(); // Validate token with SECRET_KEY
                     String username = claims.getSubject(); // Get username from token
                     // String username2 = (String) claims.get("username");
-                    Object authoritiesClaims = claims.get("authoritiens");// Get the authorities from token
-                    System.out.print("CLAIMS: " + authoritiesClaims.toString());
+                    Object authoritiesClaims = claims.get("authoritiens");// Get the authorities from token                    
                     
-                    
+                    System.out.print("TO STRING BYTES" + authoritiesClaims.toString().getBytes());
                     
                     Collection<? extends GrantedAuthority> authorities = Arrays.asList( // Convert the authorities Object to Collection of type GrantheAuthority
                         new ObjectMapper()
@@ -68,9 +74,8 @@ public class JwtValidationFilter extends BasicAuthenticationFilter{
                         .readValue(authoritiesClaims.toString().getBytes(), SimpleGrantedAuthority[].class)
                     );
                     
-                    authorities.forEach(authority -> {
-                    	authority.toString().replace("authority", "");
-                    });
+                    System.out.print("CLAIMS: " + authorities);
+
 
                     // QUESTION: Why do we generate this token? Is this token replacing the already created token when login authentication?
                     // INFO: Upon successful authentication, the user’s details are encapsulated in a UsernamePasswordAuthenticationToken object and stored in the SecurityContextHolder.
@@ -91,7 +96,4 @@ public class JwtValidationFilter extends BasicAuthenticationFilter{
 
                 }
     }
-
-    
-
 }

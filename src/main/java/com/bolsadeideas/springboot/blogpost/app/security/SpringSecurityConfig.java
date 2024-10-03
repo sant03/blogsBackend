@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -22,6 +23,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import com.bolsadeideas.springboot.blogpost.app.security.filters.JwtAuthenticationFilter;
 import com.bolsadeideas.springboot.blogpost.app.security.filters.JwtValidationFilter;
+import com.bolsadeideas.springboot.blogpost.app.services.JpaUserDetailsService;
 
 @Configuration
 public class SpringSecurityConfig {
@@ -52,8 +54,8 @@ public class SpringSecurityConfig {
         .requestMatchers(HttpMethod.DELETE, "/blogs/**").permitAll()
         .requestMatchers(HttpMethod.PUT, "/blogs/**").permitAll()
         .requestMatchers(HttpMethod.POST, "/blogs/**").permitAll()
-        //.requestMatchers(HttpMethod.GET, "/users").permitAll()
-        //.requestMatchers(HttpMethod.PUT, "/users/**").permitAll()
+        .requestMatchers(HttpMethod.GET, "/users").permitAll()
+        .requestMatchers(HttpMethod.PUT, "/users/**").permitAll()
         //.requestMatchers(HttpMethod.POST, "/signUp").permitAll()
         //.requestMatchers(HttpMethod.POST, "/login").permitAll()
         .anyRequest().authenticated())

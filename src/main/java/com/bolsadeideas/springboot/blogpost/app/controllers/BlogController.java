@@ -58,13 +58,13 @@ public class BlogController {
 	private List<String> tags = new ArrayList<>();
 	
 	@GetMapping("/listar")
-    @PreAuthorize("hasAnyRole({'LECTOR', 'ADMIN', 'EDITOR'})")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'USER', 'EDITOR')")
 	public ResponseEntity<?> obtenerBlogs(Model model ,@RequestParam(required=false) String term, @RequestParam(defaultValue="0") int page){
 		
 		Pageable pageRequest = PageRequest.of(page, 5);
 		
 		Page<Blog> blogs = service.listarBlogsPageable(pageRequest, term);
-		PageRender<Blog> pageRender = new PageRender<Blog>("/listar", blogs);
+		PageRender<Blog> pageRender = new PageRender<Blog>("/blogs/listar", blogs);
 		//List<Blog> blogs = service.listBlogs(term);
 		model.addAttribute("blogs", blogs);
 		model.addAttribute("page", pageRender);
