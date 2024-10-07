@@ -1,20 +1,31 @@
 package com.bolsadeideas.springboot.blogpost.app.controllers;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.tomcat.util.digester.ArrayStack;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.context.annotation.SessionScope;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bolsadeideas.springboot.blogpost.app.entities.Blog;
 import com.bolsadeideas.springboot.blogpost.app.entities.Role;
@@ -65,14 +77,89 @@ public class UserController {
 	}
 	
 	@GetMapping("/users/{id}")
-	public String listarUsuario(Model model, @PathVariable Integer id){
+	public ResponseEntity<?> listarUsuario(Model model, @PathVariable Integer id){
 		User user = service.findById(id);
 		if(user == null) {
-			return "redirect:/users";
+			//return "redirect:/users";
+			return ResponseEntity.badRequest().body(false);
 		}
 		model.addAttribute("existsUser", false);
 		model.addAttribute("user", user);
-		return "user";
+		//return "user";
+		return ResponseEntity.ok().body(user);
+	}
+	
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteUsuario(Model model, @PathVariable Integer id){
+		User user = service.deleteUser(id);
+		System.out.print("Usuaurio despues de eliminar: " +  user);
+		if(user == null) {
+			//return "redirect:/users";
+			return ResponseEntity.badRequest().body(false);
+		}
+		model.addAttribute("existsUser", false);
+		model.addAttribute("user", user);
+		//return "user";
+		return ResponseEntity.ok().body(user);
+	}
+	
+	@GetMapping("upload/{filename:.+}")
+	public ResponseEntity<Resource> verFoto(@PathVariable String filename){
+		Path pathFoto = Paths.get("src//main//resources//static/uploads").resolve(filename).toAbsolutePath();
+		Resource recurso = null;
+		try {
+			recurso = new UrlResource(pathFoto.toUri());
+			if(!recurso.exists() && !recurso.isReadable()) {
+				throw new RuntimeException("Error no se puede leer la imagen" + pathFoto.toString());
+			}
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"").body(recurso);
+		
+	}
+	
+	@PostMapping("/upload")
+	public ResponseEntity<?> subirImagen(@RequestParam("file") MultipartFile foto, @RequestParam int id){
+		if(!foto.isEmpty()) {
+			User user = service.findById(id);
+			if(user != null) {
+				System.out.print("Objeto Blog: " + user.toString());
+				System.out.print("Validacion: " + (user.getFoto() != null && user.getFoto().length() > 0));
+				if(user.getFoto() != null && user.getFoto().length() > 0) {
+					Path pathFoto = Paths.get("src/main/resources/static/uploads").resolve(user.getFoto()).toAbsolutePath();
+					File archivo = pathFoto.toFile();
+					if(archivo.exists() && archivo.canRead()) {
+						if(archivo.delete()) {
+							System.out.print("Imagen eliminada correctamente");
+						}else {
+							System.out.print("la imagen no se eliminó");
+						}
+					}
+				}else {
+					System.out.print("Imagen no existe, es null");
+				}
+				Path directorioRecursos = Paths.get("src//main//resources//static/uploads");
+				String roothPath = directorioRecursos.toFile().getAbsolutePath();
+				try {
+			        String uniqueFileName = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+					byte[] bytes = foto.getBytes();
+					Path rutaCompleta =  Paths.get(roothPath + "//" + uniqueFileName);
+					Files.write(rutaCompleta, bytes);
+					user.setFoto(uniqueFileName);
+					service.updateUser(user, user.getId());
+					return ResponseEntity.ok().body(true);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		return ResponseEntity.ok().body(false);
+
 	}
 	
 	
@@ -113,7 +200,7 @@ public class UserController {
 		model.addAttribute("isAuth", isAuth);
 		if(isAuth) {
 			//return "redirect:/blogs/listar";
-			return ResponseEntity.ok().body(true);
+			return ResponseEntity.ok().body(isAuth);
 			//return ResponseEntity.badRequest().body(errors);
 		}else {
 			return ResponseEntity.ok().body(false);

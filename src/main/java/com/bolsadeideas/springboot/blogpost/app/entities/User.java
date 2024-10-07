@@ -29,6 +29,8 @@ public class User {
 	@NotEmpty
 	private String password;
 	
+	private String foto;
+	
 	@ManyToMany
 	@JoinTable(name="user_roles",
     joinColumns = @JoinColumn(name="user_id"),
@@ -75,6 +77,14 @@ public class User {
 
 	public void setRoles(List<Role> roles) {
 		this.roles = roles;
+	}
+
+	public String getFoto() {
+		return foto;
+	}
+
+	public void setFoto(String foto) {
+		this.foto = foto;
 	}
 	
 	

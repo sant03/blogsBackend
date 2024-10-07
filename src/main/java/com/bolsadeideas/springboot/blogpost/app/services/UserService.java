@@ -4,6 +4,9 @@ import com.bolsadeideas.springboot.blogpost.app.entities.Blog;
 import com.bolsadeideas.springboot.blogpost.app.entities.Role;
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,6 +101,11 @@ public class UserService {
 					dbUserToUpdate.setUsername(user.getUsername());
 					dbUserToUpdate.setPassword(user.getPassword());
 					dbUserToUpdate.setRoles(user.getRoles());
+					if(user.getFoto() == null) {
+						dbUserToUpdate.setFoto(dbUserToUpdate.getFoto());
+					}else {
+						dbUserToUpdate.setFoto(user.getFoto());
+					}
 					return repository.save(dbUserToUpdate);
 				}
 			}			
@@ -108,11 +116,35 @@ public class UserService {
 				dbUserToUpdate.setUsername(user.getUsername());
 				dbUserToUpdate.setPassword(user.getPassword());
 				dbUserToUpdate.setRoles(user.getRoles());
+				if(user.getFoto() == null) {
+					dbUserToUpdate.setFoto(dbUserToUpdate.getFoto());
+				}else {
+					dbUserToUpdate.setFoto(user.getFoto());
+				}
 				return repository.save(dbUserToUpdate);
 			}
 		}
 		return null;
 
+	}
+	
+	public User deleteUser(int id) {
+		Optional<User> optionalUser = repository.findById(id);
+		System.out.print(optionalUser.isPresent());
+		if(optionalUser.isPresent()) {
+			User dBUser = optionalUser.orElseThrow();
+			System.out.print("Usuario existente en base de datos: " + dBUser);
+			if(dBUser.getFoto() != null && dBUser.getFoto().length() > 0) {
+				Path pathFoto = Paths.get("src/main/resources/static/uploads").resolve(dBUser.getFoto()).toAbsolutePath();
+				File archivo = pathFoto.toFile();
+				if(archivo.exists() && archivo.canRead()) {
+					archivo.delete();
+				}
+			}
+			repository.deleteById(id);
+			return optionalUser.orElseThrow();
+		}
+		return null;
 	}
 
 	public Boolean authenticateUser(User user) {

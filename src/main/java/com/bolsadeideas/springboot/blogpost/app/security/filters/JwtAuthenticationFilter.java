@@ -5,15 +5,20 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
+import com.bolsadeideas.springboot.blogpost.app.repositories.UserRepository;
+import com.bolsadeideas.springboot.blogpost.app.services.UserService;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,10 +34,13 @@ import static com.bolsadeideas.springboot.blogpost.app.security.TokenJwtConfig.*
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
 	private AuthenticationManager authenticationManager;
+	
+	private UserRepository repository;
     
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
         this.authenticationManager = authenticationManager;
+        this.repository = userRepository;
     }
 
 	
@@ -88,9 +96,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .compact();
                 
                 response.addHeader(HEADER_AUTHORIZATION, PREFIX_TOKEN + token );
-                Map<String, String> body = new HashMap<>();
+                Map<String, Object> body = new HashMap<>();
+                Optional<User> userdb = repository.findByUsername(username);
+                User optionalToUser = userdb.orElseThrow();
                 body.put("token", token);
                 body.put("username", username);
+                body.put("id", optionalToUser.getId());
                 body.put("message", String.format("Hola %s has iniciado sesion con exito", username));
                 response.getWriter().write(new ObjectMapper().writeValueAsString(body));
                 response.setContentType(CONTENT_TYPE);

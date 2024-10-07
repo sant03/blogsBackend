@@ -21,12 +21,16 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import com.bolsadeideas.springboot.blogpost.app.repositories.UserRepository;
 import com.bolsadeideas.springboot.blogpost.app.security.filters.JwtAuthenticationFilter;
 import com.bolsadeideas.springboot.blogpost.app.security.filters.JwtValidationFilter;
 import com.bolsadeideas.springboot.blogpost.app.services.JpaUserDetailsService;
 
 @Configuration
 public class SpringSecurityConfig {
+	
+	@Autowired
+	private UserRepository repository;
 	
 	@Autowired
     private AuthenticationConfiguration authenticationConfiguration;
@@ -55,12 +59,16 @@ public class SpringSecurityConfig {
         .requestMatchers(HttpMethod.PUT, "/blogs/**").permitAll()
         .requestMatchers(HttpMethod.POST, "/blogs/**").permitAll()
         .requestMatchers(HttpMethod.GET, "/users").permitAll()
+        .requestMatchers(HttpMethod.POST, "/*").permitAll()
+        .requestMatchers(HttpMethod.GET, "/upload/*").permitAll()
         .requestMatchers(HttpMethod.PUT, "/users/**").permitAll()
+        .requestMatchers(HttpMethod.GET, "/users/*").permitAll()
+        .requestMatchers(HttpMethod.DELETE, "/delete/*").permitAll()
         //.requestMatchers(HttpMethod.POST, "/signUp").permitAll()
         //.requestMatchers(HttpMethod.POST, "/login").permitAll()
         .anyRequest().authenticated())
         .cors(cors -> cors.configurationSource(configurationSource()))
-        .addFilter(new JwtAuthenticationFilter(authenticationManager())) // Add filter for JwtAuthentication (When login)
+        .addFilter(new JwtAuthenticationFilter(authenticationManager(), repository)) // Add filter for JwtAuthentication (When login)
         //.addFilter(new JwtValidationFilter(authenticationManager()))
         .csrf(config -> config.disable())
         .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
