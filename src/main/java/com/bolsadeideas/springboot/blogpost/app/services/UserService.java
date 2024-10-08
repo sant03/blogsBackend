@@ -29,6 +29,9 @@ public class UserService {
 	private UserRepository repository;
 	
 	@Autowired
+	public EmailService emailSender;
+	
+	@Autowired
     private PasswordEncoder passwordEncoder;
 
 	@Autowired
@@ -75,7 +78,11 @@ public class UserService {
 		}
 		String passwordEncoded = passwordEncoder.encode(user.getPassword()); // Ciframos la contraseña
         user.setPassword(passwordEncoded); // Actualizamos la contraseña
-		return repository.save(user);
+        User userSaved = repository.save(user);
+        if(userSaved != null) {
+        	emailSender.sendEmail("blogspost253@gmail.com", "Bienvenido a Blogs Post", "Ahora eres parte de nuestra comunidad de bloggeros, esperamos y disfrutes tu experiencia!");
+        }
+		return userSaved;
 	}
 
 	public User updateUser(User user, Integer id) {
@@ -142,6 +149,7 @@ public class UserService {
 				}
 			}
 			repository.deleteById(id);
+        	emailSender.sendEmail("blogspost253@gmail.com", "¿Tan Pronto te vas?", "Lamentamos que hayas decidio irte, esperamos que vuelvas pronto");
 			return true;
 		}else {
 			return false;

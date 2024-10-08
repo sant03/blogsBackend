@@ -233,7 +233,7 @@ public class UserController {
 		
 	}
 	
-	@PutMapping("/users/update/{id}")
+	@PutMapping({"/user/update/{id}", "/profile/update/{id}"})
 	public ResponseEntity<?> updateUser(Model model,@Valid @RequestBody User user, BindingResult result, @PathVariable Integer id) {
 		Map<String, Object> errors = new HashMap<>();
 		
@@ -257,6 +257,26 @@ public class UserController {
 			return ResponseEntity.ok().body(false);
 		}
 		//return ResponseEntity.ok().body(updatedBlog != null ? updatedBlog : "No encontramos el blog a actualizar, intenta con otro");
+	}
+	
+	@GetMapping("/requestResource/{id}")
+	public ResponseEntity<?> requestPermission(@PathVariable Integer id) {
+		
+		User user = service.findById(id);
+		if(user != null) {
+			StringBuilder message = new StringBuilder("Hola Administrador, el usuario: ");
+			message.append(user.getUsername()); 
+			message.append(" con el Role : ");
+			user.getRoles().forEach(role -> {
+				message.append(role.getName());
+			});
+			message.append(" ha solicitado acceso al recurso ");
+			message.append("nombre del recurso ");
+			
+			service.emailSender.sendEmail("blogspost253@gmail.com", "Solicitud de Autorizacion", message.toString());
+			return ResponseEntity.ok().body(true);
+		}
+		return ResponseEntity.ok().body(false);
 	}
 	
 	@ModelAttribute("roles")
