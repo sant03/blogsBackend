@@ -6,12 +6,13 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 
-import com.bolsadeideas.springboot.blogpost.app.entities.Role;
+import com.bolsadeideas.springboot.blogpost.app.entities.Resource;
 
-public interface RoleRepository extends JpaRepository<Role, Integer>{
+
+public interface ResourceRepository extends JpaRepository<Resource, Integer>{
 	
-	public List<Role> findAll();
+	public List<Resource> findAll();
 	
-	public Optional<Role> findById(Integer id);
+	public Optional<Resource> findById(int id);
 
 }

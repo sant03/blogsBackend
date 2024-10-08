@@ -5,12 +5,13 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
 
-public interface UserRepository extends CrudRepository<User, Integer>{
+public interface UserRepository extends JpaRepository<User, Integer>{
 	
 	public List<User> findAll();
 	

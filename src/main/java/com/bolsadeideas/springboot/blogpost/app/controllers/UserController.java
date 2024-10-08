@@ -91,9 +91,9 @@ public class UserController {
 	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteUsuario(Model model, @PathVariable Integer id){
-		User user = service.deleteUser(id);
+		Boolean user = service.deleteUser(id);
 		System.out.print("Usuaurio despues de eliminar: " +  user);
-		if(user == null) {
+		if(user == false) {
 			//return "redirect:/users";
 			return ResponseEntity.badRequest().body(false);
 		}

@@ -128,7 +128,7 @@ public class UserService {
 
 	}
 	
-	public User deleteUser(int id) {
+	public Boolean deleteUser(int id) {
 		Optional<User> optionalUser = repository.findById(id);
 		System.out.print(optionalUser.isPresent());
 		if(optionalUser.isPresent()) {
@@ -142,9 +142,10 @@ public class UserService {
 				}
 			}
 			repository.deleteById(id);
-			return optionalUser.orElseThrow();
+			return true;
+		}else {
+			return false;
 		}
-		return null;
 	}
 
 	public Boolean authenticateUser(User user) {

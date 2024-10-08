@@ -15,6 +15,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.annotation.SessionScope;
 
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
 import com.bolsadeideas.springboot.blogpost.app.repositories.UserRepository;
@@ -31,6 +33,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import static com.bolsadeideas.springboot.blogpost.app.security.TokenJwtConfig.*;
 
+@SessionScope
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 
 	private AuthenticationManager authenticationManager;
@@ -102,6 +105,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 body.put("token", token);
                 body.put("username", username);
                 body.put("id", optionalToUser.getId());
+                body.put("roles", optionalToUser.getRoles());
                 body.put("message", String.format("Hola %s has iniciado sesion con exito", username));
                 response.getWriter().write(new ObjectMapper().writeValueAsString(body));
                 response.setContentType(CONTENT_TYPE);

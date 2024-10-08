@@ -1,9 +1,16 @@
 package com.bolsadeideas.springboot.blogpost.app.entities;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotEmpty;
 
 @Entity
@@ -18,6 +25,12 @@ public class Role {
 	
 	@NotEmpty
 	private String code;
+	
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinTable(name="role_resource",
+    joinColumns = @JoinColumn(name="role_id"),
+    inverseJoinColumns = @JoinColumn(name="resource_id")) 
+	private List<Resource> resources;
 
 	public Role() {
 	}
@@ -55,7 +68,9 @@ public class Role {
 	public void setCode(String code) {
 		this.code = code;
 	}
-	
-	
 
+	public List<Resource> getResources() {
+		return resources;
+	}
+	
 }
