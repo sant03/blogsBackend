@@ -45,6 +45,7 @@ import com.bolsadeideas.springboot.blogpost.app.entities.User;
 import com.bolsadeideas.springboot.blogpost.app.services.UserService;
 import com.bolsadeideas.springboot.blogpost.app.util.paginator.PageRender;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -260,20 +261,41 @@ public class UserController {
 	}
 	
 	@GetMapping("/requestResource/{id}")
-	public ResponseEntity<?> requestPermission(@PathVariable Integer id) {
+	public ResponseEntity<?> requestPermission(@PathVariable Integer id, @RequestParam(defaultValue="N/A") String resource, @RequestParam(defaultValue="N/A") String action) {
 		
 		User user = service.findById(id);
 		if(user != null) {
-			StringBuilder message = new StringBuilder("Hola Administrador, el usuario: ");
+			StringBuilder message = new StringBuilder("<h1>Blogs Post Notify</h1>");
+			message.append("<br>");
+			message.append("<img src='https://buildfire.com/wp-content/uploads/2017/04/marketing-blogs.jpg' style='width:20em; height:10em; border-radius:1em;'>");
+			message.append("<br>");
+			message.append("<p>El usuario: ");
+			message.append("<strong>");
 			message.append(user.getUsername()); 
-			message.append(" con el Role : ");
+			message.append("</strong>");
+			message.append(" con el Role: ");
 			user.getRoles().forEach(role -> {
+				message.append("<strong>");
 				message.append(role.getName());
+				message.append("</strong>");
 			});
-			message.append(" ha solicitado acceso al recurso ");
-			message.append("nombre del recurso ");
 			
-			service.emailSender.sendEmail("blogspost253@gmail.com", "Solicitud de Autorizacion", message.toString());
+			message.append(" ha solicitado acceso al recurso ");
+			message.append("<strong>");
+			message.append(resource);
+			message.append("</strong>");
+			message.append(" y a la accion ");
+			message.append("<strong>");
+			message.append(action);
+			message.append("</strong>");
+			message.append("</p>");
+			
+			try {
+				service.emailSender.sendHtmlEmail("blogspost253@gmail.com", "Solicitud de Autorizacion", message.toString());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return ResponseEntity.ok().body(true);
 		}
 		return ResponseEntity.ok().body(false);

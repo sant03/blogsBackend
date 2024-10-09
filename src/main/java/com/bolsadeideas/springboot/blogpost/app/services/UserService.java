@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 
 import com.bolsadeideas.springboot.blogpost.app.repositories.RoleRepository;
 import com.bolsadeideas.springboot.blogpost.app.repositories.UserRepository;
+
+import jakarta.mail.MessagingException;
+
 import com.bolsadeideas.springboot.blogpost.app.entities.User;
 
 @Service
@@ -80,7 +83,29 @@ public class UserService {
         user.setPassword(passwordEncoded); // Actualizamos la contraseña
         User userSaved = repository.save(user);
         if(userSaved != null) {
-        	emailSender.sendEmail("blogspost253@gmail.com", "Bienvenido a Blogs Post", "Ahora eres parte de nuestra comunidad de bloggeros, esperamos y disfrutes tu experiencia!");
+        	StringBuilder message = new StringBuilder("<h1>Welcome to Blogs Post</h1>");
+			message.append("<br>");
+			message.append("<img src='https://wallpaperaccess.com/full/6810534.jpg' style='width:20em; height:10em; border-radius:1em;'>");
+			message.append("<br>");
+			message.append("<p>Bienvenido ");
+			user.getRoles().forEach(role -> {
+				message.append("<strong>");
+				message.append(role.getName());
+				message.append("</strong>");
+			});
+			message.append("<strong> ");
+			message.append(user.getUsername()); 
+			message.append("</strong>");
+			message.append(" Ahora eres parte de nuestra comunidad de Bloggeros ");
+			message.append("esperamos y disfrutes de tu experiencia!");
+			message.append("</p>");
+
+        	try {
+				emailSender.sendHtmlEmail("blogspost253@gmail.com", "Welcome to Blogs Post", message.toString());
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
 		return userSaved;
 	}
